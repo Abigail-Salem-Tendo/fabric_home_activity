@@ -10,8 +10,6 @@ SSH_KEY = os.getenv("SSH_KEY")
 SSH_PASSPHRASE = os.getenv("SSH_PASSPHRASE")
 
 DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 LOCAL_DUMP = "dump.sql"
 REMOTE_DUMP = f"/home/{USER}/dump.sql"
@@ -37,7 +35,7 @@ def create_database():
         f"sudo mysql -e \"CREATE DATABASE IF NOT EXISTS {DB_NAME};\"",
         pty=True
     )
-#Upload the dump
+#Upload the SQL dump
 def upload_dump():
     connection.put(LOCAL_DUMP, REMOTE_DUMP)
 
@@ -50,16 +48,18 @@ def import_dump():
 
 #verify the dump
 def verify():
-    print("\n[5] Verifying dump")
+    print("\nVerifying dump to make sure the database exists.")
     connection.run(
         f"sudo mysql -e \"USE {DB_NAME}; SHOW TABLES;\"",
         pty=True
     )
+def deploy():
+    install_mysql()
+    create_database()
+    upload_dump()
+    import_dump()
+    verify()
+    print("All done! Deployment complete.")
 
-install_mysql()
-create_database()
-upload_dump()
-import_dump()
-verify()
-
-print("All done!")
+if __name__ == "__main__":
+    deploy()
